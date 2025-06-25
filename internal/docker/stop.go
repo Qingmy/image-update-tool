@@ -5,6 +5,7 @@ import (
 	"image-update-tool/internal/config"
 	"image-update-tool/internal/flags"
 	"os/exec"
+	"path/filepath"
 )
 
 func Stop(config *config.Config, service flags.ServiceType) (bool, error) {
@@ -35,7 +36,16 @@ func executeComposeDownCommand(path string) (bool, error) {
 	if path == "" {
 		return false, fmt.Errorf("未指定 compose 路径")
 	}
-	cmd := exec.Command("docker-compose", "down")
+	files, err := filepath.Glob(filepath.Join(path, "*.yml"))
+	if err != nil || len(files) == 0 {
+		return false, fmt.Errorf("找不到任何 yml 文件")
+	}
+
+	args := []string{"down"}
+	for _, f := range files {
+		args = append([]string{"-f", f}, args...)
+	}
+	cmd := exec.Command("docker-compose", args...)
 	cmd.Dir = path
 	output, err := cmd.CombinedOutput()
 	fmt.Println("命令输出:\n", string(output))
