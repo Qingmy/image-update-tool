@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"context"
 	"fmt"
+	"image-update-tool/internal/utils"
 	"os"
 
 	"github.com/docker/docker/client"
@@ -35,15 +36,14 @@ func LoadImage(cli *client.Client, imagePath string) (bool, error) {
 		return false, fmt.Errorf("打开 tar 文件失败: %w", err)
 	}
 	defer tarFile.Close()
-
-	fmt.Println("✅ 正在加载更新镜像")
+	stop := utils.StartSpinner("⏳ 正在加载更新镜像")
 	// 加载镜像
 	response, err := cli.ImageLoad(ctx, tarFile)
 	if err != nil {
 		return false, fmt.Errorf("加载镜像失败: %w", err)
 	}
 	defer response.Body.Close()
-
-	fmt.Println("✅ 更新镜像加载完成")
+	stop()
+	fmt.Println("✅ 加载更新镜像成功")
 	return true, nil
 }
