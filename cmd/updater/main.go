@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"image-update-tool/internal/config"
 	"image-update-tool/internal/docker"
 	"image-update-tool/internal/flags"
 	"os"
@@ -9,6 +10,11 @@ import (
 
 func main() {
 	flags := flags.ParseFlags()
+	configs, err := config.ReadYaml(flags.ConfigPath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "错误：%v\n", err)
+		os.Exit(1)
+	}
 	fmt.Printf("开始更新服务 [%s]，镜像路径：%s\n", flags.Service, flags.ImagePath)
 	cli, err := docker.CreateDockerClient()
 	if err != nil {
@@ -20,7 +26,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "错误：%v\n", err)
 		os.Exit(1)
 	}
-	_, err = docker.Stop(cli, flags.Service, 5)
+	_, err = docker.Stop(configs, flags.Service)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "错误：%v\n", err)
 		os.Exit(1)

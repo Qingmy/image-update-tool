@@ -8,9 +8,32 @@ import (
 	"os"
 )
 
+type ServiceType int
+
+const (
+	EmrWisdomServer ServiceType = iota
+	EmrWisdomSync
+	EmrWisdomWebui
+	Redis
+	Mysql
+)
+
+var ServiceString = map[ServiceType]string{
+	EmrWisdomServer: "emr-wisdom-server",
+	EmrWisdomSync:   "emr-wisdom-sync",
+	EmrWisdomWebui:  "emr-wisdom-webui",
+	Redis:           "redis",
+	Mysql:           "mysql",
+}
+
+func (st ServiceType) String() string {
+	return ServiceString[st]
+}
+
 type flags struct {
-	Service   string
-	ImagePath string
+	Service    ServiceType
+	ImagePath  string
+	ConfigPath string
 }
 
 var validServices = map[string]bool{
@@ -33,17 +56,20 @@ func exitWithError(msg string) {
 
 func ParseFlags() *flags {
 	flags := &flags{}
-	flag.StringVar(&flags.Service, "service", "", "准备更新的服务")
-	flag.StringVar(&flags.Service, "S", "", "准备更新的服务(简写)")
+	var serviceName string
+	flag.StringVar(&serviceName, "service", "", "准备更新的服务")
+	flag.StringVar(&serviceName, "S", "", "准备更新的服务(简写)")
 	flag.StringVar(&flags.ImagePath, "path", "", "更新镜像路径")
 	flag.StringVar(&flags.ImagePath, "P", "", "更新镜像路径(简写)")
+	flag.StringVar(&flags.ConfigPath, "config", "./update.yml", "配置文件路径")
+	flag.StringVar(&flags.ConfigPath, "C", "./update.yml", "配置文件路径")
 	flag.Parse()
 
 	//校验 service 是否是合法的服务
-	if flags.Service == "" {
+	if serviceName == "" {
 		exitWithError("错误：--service 参数是必填的\n")
 	}
-	if !validServices[flags.Service] {
+	if !validServices[serviceName] {
 		tpl := template.Must(template.New("errInfo").Parse("不存在此服务 {{.}} \n"))
 		var buf bytes.Buffer
 		err := tpl.Execute(&buf, flags.Service)
@@ -51,6 +77,12 @@ func ParseFlags() *flags {
 			exitWithError("模板执行失败")
 		}
 		exitWithError(buf.String())
+	}
+	for st, name := range ServiceString {
+		if name == serviceName {
+			flags.Service = st
+			break
+		}
 	}
 	if flags.ImagePath == "" {
 		exitWithError("错误：--path 参数是必填的")

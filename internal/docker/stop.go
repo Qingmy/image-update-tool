@@ -1,46 +1,46 @@
 package docker
 
 import (
-	"context"
 	"fmt"
-	"strings"
-
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/client"
+	"image-update-tool/internal/config"
+	"image-update-tool/internal/flags"
+	"os/exec"
 )
 
-func Stop(cli *client.Client, service string, timeoutSeconds int) (bool, error) {
-	ctx := context.Background()
-	if timeoutSeconds <= 0 {
-		timeoutSeconds = 10
+func Stop(config *config.Config, service flags.ServiceType) (bool, error) {
+	var path string
+	switch service {
+	case flags.EmrWisdomServer:
+		path = config.EmrWisdom
+	case flags.EmrWisdomSync:
+		path = config.EmrWisdom
+	case flags.EmrWisdomWebui:
+		path = config.EmrWisdomWebUi
+	case flags.Mysql:
+		path = config.Mysql
+	case flags.Redis:
+		path = config.Redis
+	default:
+		return false, fmt.Errorf("未知服务类型：%v", service)
 	}
-	timeout := &timeoutSeconds
-	containers, err := cli.ContainerList(ctx, container.ListOptions{
-		All: true,
-	})
+
+	ok, err := executeComposeDownCommand(path)
 	if err != nil {
-		return false, fmt.Errorf("获取容器列表失败: %w", err)
+		return false, fmt.Errorf("停止%s旧服务失败: %s", service.String(), err)
 	}
-	var containerID string
-	found := false
-	for _, c := range containers {
-		for _, name := range c.Names {
-			if strings.TrimPrefix(name, "/") == service {
-				containerID = c.ID
-				found = true
-				break
-			}
-		}
+	return ok, nil
+}
+
+func executeComposeDownCommand(path string) (bool, error) {
+	if path == "" {
+		return false, fmt.Errorf("未指定 compose 路径")
 	}
-	if !found {
-		return false, fmt.Errorf("未找到名为 '%s' 的容器", service)
-	}
-	err = cli.ContainerStop(ctx, containerID, container.StopOptions{
-		Timeout: timeout,
-	})
+	cmd := exec.Command("docker-compose", "down")
+	cmd.Dir = path
+	output, err := cmd.CombinedOutput()
+	fmt.Println("命令输出:\n", string(output))
 	if err != nil {
-		return false, fmt.Errorf("停止容器失败: %w", err)
+		return false, err
 	}
-	fmt.Println("✅ 停止旧镜像成功")
 	return true, nil
 }
