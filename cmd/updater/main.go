@@ -6,6 +6,7 @@ import (
 	"image-update-tool/internal/docker"
 	"image-update-tool/internal/flags"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -31,7 +32,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "错误：%v\n", err)
 		os.Exit(1)
 	}
-	_, err = docker.CreateNewContainer(cli, configs, flags.Service, "hhhhh")
+	_, err = docker.CreateNewContainer(cli, configs, flags.Service, strings.TrimSuffix(flags.ImagePath, ".tar"))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "错误：%v\n", err)
 		os.Exit(1)
