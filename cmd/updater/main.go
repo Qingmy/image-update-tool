@@ -31,4 +31,9 @@ func main() {
 		fmt.Fprintf(os.Stderr, "错误：%v\n", err)
 		os.Exit(1)
 	}
+	_, err = docker.CreateNewContainer(cli, configs, flags.Service, "hhhhh")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "错误：%v\n", err)
+		os.Exit(1)
+	}
 }
