@@ -22,17 +22,17 @@ func UpdateComposeFile(config *config.Config, service flags.ServiceType, imageNa
 			return false, fmt.Errorf("更新compose文件失败")
 		}
 	case flags.EmrWisdomWebui:
-		_, err := modifyComposeFile(config.EmrWisdom+"/emr-wisdom-webui.yml", imageName, flags.EmrWisdomWebui)
+		_, err := modifyComposeFile(config.EmrWisdomWebUi+"/emr-wisdom-webui.yml", imageName, flags.EmrWisdomWebui)
 		if err != nil {
 			return false, fmt.Errorf("更新compose文件失败")
 		}
 	case flags.Mysql:
-		_, err := modifyComposeFile(config.EmrWisdom+"/mysql.yml", imageName, flags.Mysql)
+		_, err := modifyComposeFile(config.Mysql+"/mysql.yml", imageName, flags.Mysql)
 		if err != nil {
 			return false, fmt.Errorf("更新compose文件失败")
 		}
 	case flags.Redis:
-		_, err := modifyComposeFile(config.EmrWisdom+"/redis.yml", imageName, flags.Redis)
+		_, err := modifyComposeFile(config.Redis+"/redis.yml", imageName, flags.Redis)
 		if err != nil {
 			return false, fmt.Errorf("更新compose文件失败")
 		}
@@ -59,8 +59,8 @@ func modifyComposeFile(filePath string, imageName string, service flags.ServiceT
 		return false, fmt.Errorf("用map解码yml文件失败")
 	}
 	services := compose["services"].(map[string]interface{})
-	api := services[serviceList[service]].(map[string]interface{})
-	api["image"] = imageName
+	item := services[serviceList[service]].(map[string]interface{})
+	item["image"] = imageName
 	newData, err := yaml.Marshal(compose)
 	if err != nil {
 		return false, fmt.Errorf("编码回yml文件失败")

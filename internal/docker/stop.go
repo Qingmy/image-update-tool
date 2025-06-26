@@ -48,7 +48,7 @@ func executeComposeDownCommand(path string) (bool, error) {
 	cmd := exec.Command("docker-compose", args...)
 	cmd.Dir = path
 	output, err := cmd.CombinedOutput()
-	fmt.Println("命令输出:\n", string(output))
+	fmt.Println(string(output))
 	if err != nil {
 		return false, err
 	}
