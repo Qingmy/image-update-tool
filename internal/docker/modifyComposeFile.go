@@ -14,30 +14,30 @@ func UpdateComposeFile(config *config.Config, service flags.ServiceType, imageNa
 	case flags.EmrWisdomServer:
 		_, err := modifyComposeFile(config.EmrWisdom+"/emr-wisdom.yml", imageName, flags.EmrWisdomServer)
 		if err != nil {
-			return false, fmt.Errorf("更新compose文件失败")
+			return false, fmt.Errorf("更新compose文件失败->%v", err)
 		}
 	case flags.EmrWisdomSync:
 		_, err := modifyComposeFile(config.EmrWisdom+"/emr-wisdom.yml", imageName, flags.EmrWisdomSync)
 		if err != nil {
-			return false, fmt.Errorf("更新compose文件失败")
+			return false, fmt.Errorf("更新compose文件失败->%v", err)
 		}
 	case flags.EmrWisdomWebui:
 		_, err := modifyComposeFile(config.EmrWisdomWebUi+"/emr-wisdom-webui.yml", imageName, flags.EmrWisdomWebui)
 		if err != nil {
-			return false, fmt.Errorf("更新compose文件失败")
+			return false, fmt.Errorf("更新compose文件失败->%v", err)
 		}
 	case flags.Mysql:
 		_, err := modifyComposeFile(config.Mysql+"/mysql.yml", imageName, flags.Mysql)
 		if err != nil {
-			return false, fmt.Errorf("更新compose文件失败")
+			return false, fmt.Errorf("更新compose文件失败->%v", err)
 		}
 	case flags.Redis:
 		_, err := modifyComposeFile(config.Redis+"/redis.yml", imageName, flags.Redis)
 		if err != nil {
-			return false, fmt.Errorf("更新compose文件失败")
+			return false, fmt.Errorf("更新compose文件失败->%v", err)
 		}
 	default:
-		return false, fmt.Errorf("未知服务类型：%v", service)
+		return false, fmt.Errorf("未知服务类型->%v", service)
 	}
 	return true, nil
 }
@@ -68,6 +68,6 @@ func modifyComposeFile(filePath string, imageName string, service flags.ServiceT
 	if err := os.WriteFile(filePath, newData, 0644); err != nil {
 		return false, fmt.Errorf("写回原路径失败")
 	}
-	fmt.Println("compose 文件已成功修改")
+	fmt.Println("✅ compose.yml 文件已成功修改")
 	return true, nil
 }
