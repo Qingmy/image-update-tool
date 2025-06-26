@@ -47,7 +47,7 @@ func executeComposeUpCommand(path string) (bool, error) {
 		return false, fmt.Errorf("找不到任何 yml 文件")
 	}
 
-	args := []string{"up"}
+	args := []string{"up", "-d"}
 	for _, f := range files {
 		args = append([]string{"-f", f}, args...)
 	}
